@@ -2,32 +2,46 @@ package ru.smax.social.network.user;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @AllArgsConstructor
 @Service
 public class UserService {
-    private final ConcurrentHashMap<String, UserView> idToUser = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, User> usernameToUser = new ConcurrentHashMap<>();
+    private final PasswordEncoder passwordEncoder;
 
-    public void registerUser(UserController.RegisterUserRequest request) {
-        if (idToUser.containsKey(request.id())) {
-            throw new IllegalArgumentException("User with id %s already exists".formatted(request.id()));
-        }
-
-        idToUser.putIfAbsent(
-                request.id(),
-                UserView.builder()
-                        .id(request.id())
-                        .name(request.name())
-                        .password(request.password())
-                        .build()
-        );
+    public UserDetailsService userDetailsService() {
+        return this::findByUsername;
     }
 
-    public UserView findUser(String id) {
-        return idToUser.get(id);
+    public User registerUser(UserController.RegisterUserRequest request) {
+        var username = request.username();
+        if (usernameToUser.containsKey(username)) {
+            throw new IllegalArgumentException("User with username '%s' already exists".formatted(username));
+        }
+
+        var encoded = passwordEncoder.encode(request.password());
+        var newUser = User.builder()
+                          .username(username)
+                          .password(encoded)
+                          .build();
+        usernameToUser.putIfAbsent(username, newUser);
+        return newUser;
+    }
+
+    public User findByUsername(String username) {
+        return usernameToUser.get(username);
+    }
+
+    public List<User> findUsers() {
+        return usernameToUser.values()
+                             .stream()
+                             .toList();
     }
 }

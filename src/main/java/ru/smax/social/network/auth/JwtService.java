@@ -1,4 +1,4 @@
-package ru.smax.social.network.security;
+package ru.smax.social.network.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -17,7 +17,7 @@ import java.util.function.Function;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class JwtService {
+class JwtService {
     private static final int TIME_10_DAYS_MILLIS = 10 * 24 * 60 * 60 * 1000;
 
     @Value("${JWT_KEY}")

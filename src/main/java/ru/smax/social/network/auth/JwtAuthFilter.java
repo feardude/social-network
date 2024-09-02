@@ -1,4 +1,4 @@
-package ru.smax.social.network.security;
+package ru.smax.social.network.auth;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -19,7 +19,7 @@ import java.io.IOException;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class JwtAuthFilter extends OncePerRequestFilter {
+class JwtAuthFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
     private static final String HEADER_NAME = "Authorization";
 

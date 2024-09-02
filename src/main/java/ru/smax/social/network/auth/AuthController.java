@@ -1,4 +1,4 @@
-package ru.smax.social.network.security;
+package ru.smax.social.network.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import ru.smax.social.network.user.UserController;
 import ru.smax.social.network.user.UserService;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -19,8 +20,14 @@ public class AuthController {
     private final JwtService jwtService;
     private final UserService userService;
 
+    @PostMapping(value = "/user/register", consumes = APPLICATION_JSON_VALUE)
+    public String registerUser(@RequestBody UserController.RegisterUserRequest request) {
+        var newUser = userService.registerUser(request);
+        return jwtService.generateToken(newUser);
+    }
+
     @PostMapping(value = "/login", consumes = APPLICATION_JSON_VALUE)
-    public String loginUser(@RequestBody AuthUserRequest request) {
+    public JwtTokenResponse loginUser(@RequestBody AuthUserRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.username,
@@ -28,12 +35,19 @@ public class AuthController {
                 )
         );
         var user = userService.findByUsername(request.username);
-        return jwtService.generateToken(user);
+        return new JwtTokenResponse(
+                jwtService.generateToken(user)
+        );
     }
 
     public record AuthUserRequest(
             String username,
             String password
+    ) {
+    }
+
+    public record JwtTokenResponse(
+            String token
     ) {
     }
 }

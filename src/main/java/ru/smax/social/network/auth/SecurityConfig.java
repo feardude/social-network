@@ -1,4 +1,4 @@
-package ru.smax.social.network.security;
+package ru.smax.social.network.auth;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

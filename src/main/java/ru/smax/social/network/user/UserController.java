@@ -1,25 +1,18 @@
 package ru.smax.social.network.user;
 
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import ru.smax.social.network.security.JwtService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @AllArgsConstructor
 @RequestMapping("/user")
 @RestController
 public class UserController {
-    private final JwtService jwtService;
     private final UserService userService;
-
-    @PostMapping(value = "/register", consumes = APPLICATION_JSON_VALUE)
-    public String registerUser(@RequestBody RegisterUserRequest request) {
-        var newUser = userService.registerUser(request);
-        return jwtService.generateToken(newUser);
-    }
 
     @GetMapping("/get/{id}")
     public User getUser(@PathVariable("id") String username) {

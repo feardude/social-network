@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.smax.social.network.auth.AuthController;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @AllArgsConstructor
@@ -21,11 +22,17 @@ public class UserService {
     }
 
     public User registerUser(AuthController.RegisterUserRequest request) {
-        log.info("Registering new user: {}", request.username());
         var username = request.username();
-        if (findByUsername(username) != null) {
+
+        var noUsername = username == null || username.isBlank();
+        if (!noUsername && findByUsername(username) != null) {
             throw new IllegalArgumentException("User with username '%s' already exists".formatted(username));
         }
+
+        if (noUsername) {
+            username = UUID.randomUUID().toString();
+        }
+        log.info("Registering new user: {}, {}", username, request);
 
         var encoded = passwordEncoder.encode(request.password());
         var newUser = User.builder()

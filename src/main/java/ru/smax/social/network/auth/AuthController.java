@@ -23,9 +23,12 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping(value = "/user/register", consumes = APPLICATION_JSON_VALUE)
-    public String registerUser(@RequestBody RegisterUserRequest request) {
+    public RegisterUserResponse registerUser(@RequestBody RegisterUserRequest request) {
         var newUser = userService.registerUser(request);
-        return jwtService.generateToken(newUser);
+        return new RegisterUserResponse(
+                newUser.username(),
+                jwtService.generateToken(newUser)
+        );
     }
 
     @PostMapping(value = "/login", consumes = APPLICATION_JSON_VALUE)
@@ -71,6 +74,14 @@ public class AuthController {
                     ", gender='" + gender + '\'' +
                     '}';
         }
+    }
+
+    public record RegisterUserResponse(
+            @JsonProperty("user_id")
+            String username,
+
+            String token
+    ) {
     }
 
     public record AuthUserRequest(

@@ -14,5 +14,16 @@ services:
     ports:
       - "5432:5432"
 
+  social-network:
+    container_name: social-network-server
+    image: "feardude/social-network:0.0.1-SNAPSHOT"
+    environment:
+      JWT_KEY: $JWT_KEY
+      DB_HOST: $DB_HOST
+      DB_USERNAME: $DB_USERNAME
+      DB_PASSWORD: $DB_PASSWORD
+    ports:
+      - "8080:8080"
+
 volumes:
   postgres:

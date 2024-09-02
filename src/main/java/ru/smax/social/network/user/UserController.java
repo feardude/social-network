@@ -23,16 +23,4 @@ public class UserController {
     public List<User> getUsers() {
         return userService.findUsers();
     }
-
-    public record RegisterUserRequest(
-            String username,
-            String password
-    ) {
-        @Override
-        public String toString() {
-            return "RegisterUserRequest{" +
-                    "username='" + username + '\'' +
-                    '}';
-        }
-    }
 }

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.smax.social.network.auth.AuthController;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class UserService {
         return this::findByUsername;
     }
 
-    public User registerUser(UserController.RegisterUserRequest request) {
+    public User registerUser(AuthController.RegisterUserRequest request) {
         log.info("Registering new user: {}", request.username());
         var username = request.username();
         if (findByUsername(username) != null) {
@@ -30,6 +31,12 @@ public class UserService {
         var newUser = User.builder()
                           .username(username)
                           .password(encoded)
+                          .firstName(request.firstName())
+                          .lastName(request.lastName())
+                          .birthday(request.birthday())
+                          .biography(request.biography())
+                          .city(request.city())
+                          .gender(request.gender())
                           .build();
         userRepository.save(newUser);
         return newUser;

@@ -1,0 +1,1 @@
+curl https://api.postman.com/collections/1768192-05049db4-e4c8-446a-a068-ab38a06aa3ac?access_key=PMAT-01J6W66XYHD6YWP7892VEEDWEN

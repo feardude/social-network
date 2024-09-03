@@ -1,0 +1,160 @@
+{
+  "collection": {
+    "info": {
+      "_postman_id": "05049db4-e4c8-446a-a068-ab38a06aa3ac",
+      "name": "Social network",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+      "updatedAt": "2024-09-01T05:50:10.000Z",
+      "createdAt": "2024-08-30T17:52:20.000Z",
+      "lastUpdatedBy": "1768192",
+      "uid": "1768192-05049db4-e4c8-446a-a068-ab38a06aa3ac"
+    },
+    "item": [
+      {
+        "name": "User: register",
+        "id": "aeb9a446-a0da-4563-8335-fc0bdf311bb1",
+        "protocolProfileBehavior": {
+          "disableBodyPruning": true
+        },
+        "request": {
+          "method": "POST",
+          "header": [],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"username\": \"john.deere\",\n    \"password\": \"super-secure-password-eat-that-hackers\",\n    \"first_name\": \"John\",\n    \"second_name\": \"Deere\",\n    \"birthdate\": \"1990-12-21\",\n    \"biography\": \"Software, highload\",\n    \"city\": \"Moscow\",\n    \"gender\": \"male\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "url": {
+            "raw": "http://localhost:8080/user/register",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "8080",
+            "path": [
+              "user",
+              "register"
+            ]
+          }
+        },
+        "response": [],
+        "uid": "1768192-aeb9a446-a0da-4563-8335-fc0bdf311bb1"
+      },
+      {
+        "name": "User: get by id",
+        "id": "ba55b910-4707-4cb5-b6ab-70a8e415d2cf",
+        "protocolProfileBehavior": {
+          "disableBodyPruning": true
+        },
+        "request": {
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "eyJhbGciOiJIUzM4NCJ9.eyJ1c2VybmFtZSI6ImpvaG4uZGVlcmUiLCJzdWIiOiJqb2huLmRlZXJlIiwiaWF0IjoxNzI1Mjk5ODgxLCJleHAiOjE3MjYxNjM4ODF9.hddRpQKTJihyUT2FizAa4hxRbbznKgK_dfFmNzTnKcjSQHCEPooV4rUiO3IeOCR0",
+                "type": "string"
+              }
+            ]
+          },
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "http://localhost:8080/user/get/john.deere",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "8080",
+            "path": [
+              "user",
+              "get",
+              "john.deere"
+            ]
+          }
+        },
+        "response": [],
+        "uid": "1768192-ba55b910-4707-4cb5-b6ab-70a8e415d2cf"
+      },
+      {
+        "name": "Users: get all",
+        "id": "82e34bf5-4c5b-463a-91a4-5551d9bfc313",
+        "protocolProfileBehavior": {
+          "disableBodyPruning": true
+        },
+        "request": {
+          "auth": {
+            "type": "basic",
+            "basic": [
+              {
+                "key": "username",
+                "value": "admin",
+                "type": "string"
+              },
+              {
+                "key": "password",
+                "value": "root",
+                "type": "string"
+              }
+            ]
+          },
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "http://localhost:8080/user",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "8080",
+            "path": [
+              "user"
+            ]
+          }
+        },
+        "response": [],
+        "uid": "1768192-82e34bf5-4c5b-463a-91a4-5551d9bfc313"
+      },
+      {
+        "name": "Login",
+        "id": "037acca0-38a2-4cfd-80d1-ea6344787a9c",
+        "protocolProfileBehavior": {
+          "disableBodyPruning": true
+        },
+        "request": {
+          "auth": {
+            "type": "noauth"
+          },
+          "method": "POST",
+          "header": [],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n    \"username\": \"john.deere\",\n    \"password\": \"super-secure-password-eat-that-hackers\"\n}",
+            "options": {
+              "raw": {
+                "language": "json"
+              }
+            }
+          },
+          "url": {
+            "raw": "http://localhost:8080/login",
+            "protocol": "http",
+            "host": [
+              "localhost"
+            ],
+            "port": "8080",
+            "path": [
+              "login"
+            ]
+          }
+        },
+        "response": [],
+        "uid": "1768192-037acca0-38a2-4cfd-80d1-ea6344787a9c"
+      }
+    ]
+  }
+}

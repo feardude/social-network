@@ -35,3 +35,8 @@ out/
 
 ### VS Code ###
 .vscode/
+
+/jmeter/venv/
+/jmeter/*.csv
+/jmeter/*.png
+.DS_Store

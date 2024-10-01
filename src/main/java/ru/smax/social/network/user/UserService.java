@@ -57,4 +57,10 @@ public class UserService {
     public List<User> findUsers() {
         return userRepository.findAll();
     }
+
+    public List<User> findByName(String firstName, String lastName) {
+        var users = userRepository.findByName(firstName, lastName);
+        log.info("Found users by name pattern [count={}, first='{}', last='{}']", users.size(), firstName, lastName);
+        return users;
+    }
 }

@@ -40,3 +40,6 @@ out/
 /jmeter/*.csv
 /jmeter/*.png
 .DS_Store
+
+postgres/
+*.log

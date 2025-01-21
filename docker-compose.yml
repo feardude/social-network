@@ -1,18 +1,41 @@
 version: '3.9'
 
 services:
-  postgres:
-    container_name: postgres-social-network
+  postgres-social-network-1:
+    container_name: postgres-social-network-1
     image: "postgres:latest"
     environment:
       POSTGRES_DB: "social_network"
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "password"
-      PGDATA: "/data/postgres"
     volumes:
-      - postgres:/data/postgres
+      - ./postgres/psn1:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  postgres-social-network-2:
+    container_name: postgres-social-network-2
+    image: "postgres:latest"
+    environment:
+      POSTGRES_DB: "social_network"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+    volumes:
+      - ./postgres/psn2:/var/lib/postgresql/data
+    ports:
+      - "25432:5432"
+
+  postgres-social-network-3:
+    container_name: postgres-social-network-3
+    image: "postgres:latest"
+    environment:
+      POSTGRES_DB: "social_network"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+    volumes:
+      - ./postgres/psn3:/var/lib/postgresql/data
+    ports:
+      - "35432:5432"
 
   social-network:
     container_name: social-network-server
@@ -24,6 +47,3 @@ services:
       DB_PASSWORD: $DB_PASSWORD
     ports:
       - "8080:8080"
-
-volumes:
-  postgres:

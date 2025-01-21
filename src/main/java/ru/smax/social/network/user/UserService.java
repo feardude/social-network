@@ -32,7 +32,6 @@ public class UserService {
         if (noUsername) {
             username = UUID.randomUUID().toString();
         }
-        log.info("Registering new user: {}, {}", username, request);
 
         var encoded = passwordEncoder.encode(request.password());
         var newUser = User.builder()
@@ -46,12 +45,14 @@ public class UserService {
                           .gender(request.gender())
                           .build();
         userRepository.save(newUser);
+//        log.info("Registered new user: {}", newUser);
         return newUser;
     }
 
     public User findByUsername(String username) {
-        log.info("Looking up user by username='{}'", username);
-        return userRepository.findByUsername(username);
+//        log.info("Looking up user by username='{}'", username);
+        return null;
+//        return userRepository.findByUsername(username);
     }
 
     public List<User> findUsers() {
@@ -60,7 +61,11 @@ public class UserService {
 
     public List<User> findByName(String firstName, String lastName) {
         var users = userRepository.findByName(firstName, lastName);
-        log.info("Found users by name pattern [count={}, first='{}', last='{}']", users.size(), firstName, lastName);
+//        log.info("Found users by name pattern [count={}, first='{}', last='{}']", users.size(), firstName, lastName);
         return users;
+    }
+
+    public User findById(Integer id) {
+        return userRepository.findById(id);
     }
 }

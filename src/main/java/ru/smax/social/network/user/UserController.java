@@ -3,6 +3,7 @@ package ru.smax.social.network.user;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,8 +17,11 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/get/{id}")
-    public User getUser(@PathVariable("id") String username) {
-        return userService.findByUsername(username);
+    public User getUser(@PathVariable("id") Integer id) {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("Invalid user id");
+        }
+        return userService.findById(id);
     }
 
     @GetMapping("/search")

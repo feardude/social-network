@@ -6,6 +6,7 @@ import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -49,6 +50,20 @@ class UserRepository {
         );
     }
 
+    @Transactional(readOnly = true)
+    public User findById(Integer id) {
+        return jdbcTemplate.queryForObject(
+                """
+                        select username, first_name, last_name, birthday, biography, city, gender
+                        from users.users
+                        where id = ?
+                        """,
+                ROW_MAPPER_USER,
+                id
+        );
+    }
+
+    @Transactional(readOnly = true)
     public User findByUsername(String username) {
         try {
             return jdbcTemplate.queryForObject(
@@ -66,6 +81,7 @@ class UserRepository {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<User> findAll() {
         return jdbcTemplate.query(
                 "select username, password, first_name, last_name, birthday, biography, city, gender from users.users",
@@ -73,6 +89,7 @@ class UserRepository {
         );
     }
 
+    @Transactional(readOnly = true)
     public List<User> findByName(String firstName, String lastName) {
         return jdbcTemplate.query(
                 """

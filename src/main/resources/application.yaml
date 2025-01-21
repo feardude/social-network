@@ -1,10 +1,6 @@
 spring:
   application:
     name: social-network
-  datasource:
-    url: jdbc:postgresql://${DB_HOST}:5432/social_network
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
 
 logging:
   level:

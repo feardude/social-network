@@ -3,6 +3,7 @@ plugins {
     idea
     id("org.springframework.boot") version "3.3.3"
     id("io.spring.dependency-management") version "1.1.6"
+    id("org.openapi.generator") version "5.3.0"
 }
 
 group = "ru.smax"
@@ -62,3 +63,10 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+openApiGenerate {
+    inputSpec.set("$projectDir/src/main/resources/openapi.json") // Путь к вашей спецификации
+    generatorName.set("spring") // Указываем тип генератора
+    outputDir.set("$buildDir/generated") // Директория для сгенерированного кода
+}
+

@@ -20,11 +20,6 @@ class FriendRepository {
         jdbcTemplate.update(sql, userId, friendId, LocalDateTime.now());
     }
 
-    public void createFriendships(List<Object[]> batchArgs) {
-        String sql = "INSERT INTO friends (user_id, friend_id, created_at) VALUES (?, ?, ?)";
-        jdbcTemplate.batchUpdate(sql, batchArgs);
-    }
-
     public List<Friend> findByUserId(Long userId) {
         String sql = "SELECT * FROM friends WHERE user_id = ?";
         return jdbcTemplate.query(sql, this::mapRowToFriend, userId);
@@ -43,4 +38,3 @@ class FriendRepository {
         );
     }
 }
-

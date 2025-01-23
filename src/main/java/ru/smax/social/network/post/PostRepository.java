@@ -20,7 +20,7 @@ class PostRepository {
                         join friends f on f.friend_id = p.author_user_id
                         where f.user_id = ?
                          and p.author_user_id = f.friend_id
-                        order by p.id
+                        order by p.created_at desc
                         limit ? offset ?
             """;
 

@@ -20,7 +20,7 @@ public class ReplicationRoutingDataSource extends AbstractRoutingDataSource {
         String dataSourceType = TransactionSynchronizationManager.isCurrentTransactionReadOnly()
                 ? pickReadOnlyReplica()
                 : "write";
-        log.debug("current datasource is '{}'", dataSourceType);
+//        log.debug("current datasource is '{}'", dataSourceType);
         return dataSourceType;
     }
 

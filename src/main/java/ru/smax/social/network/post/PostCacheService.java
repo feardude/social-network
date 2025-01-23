@@ -73,10 +73,22 @@ public class PostCacheService {
         return "posts:feed:%d".formatted(userId);
     }
 
-    private String keyPost(UUID postId) {
-        if (postId == null) {
-            throw new IllegalArgumentException("postId is null");
-        }
-        return "post:%s".formatted(postId);
+    public void putFeed(Map<Integer, List<UUID>> feed) {
+        feed.forEach((userId, postIds) -> {
+            String key = keyFeed(userId);
+            feedRedisTemplate.opsForList().trim(key, 0, -1);
+            feedRedisTemplate.opsForList().rightPushAll(key, postIds);
+        });
+        log.debug("Put post feed into redis: {} users}", feed.size());
+    }
+
+    public void putPosts(List<Post> posts) {
+        Map<UUID, Post> idToPost = posts.stream()
+                                        .collect(toMap(
+                                                Post::id,
+                                                identity()
+                                        ));
+        postRedisTemplate.opsForValue().multiSetIfAbsent(idToPost);
+        log.debug("Put posts into redis (total {})", posts.size());
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -34,5 +36,15 @@ public class PostService {
             postCacheService.putFeed(userId, posts);
         }
         return posts;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Integer, List<UUID>> findFriendsPostIds(List<Integer> userIds) {
+        log.info("Looking up feed for {} user ids", userIds.size());
+        return repository.findFriendPostIds(userIds);
+    }
+
+    public List<Post> findPosts(List<UUID> postIds) {
+        return repository.findById(postIds);
     }
 }

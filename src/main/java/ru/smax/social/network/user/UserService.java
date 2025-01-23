@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.smax.social.network.auth.AuthController;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -67,5 +69,10 @@ public class UserService {
 
     public User findById(Integer id) {
         return userRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Integer> findActiveAfter(LocalDate from, LocalDate to) {
+        return userRepository.findIdsActiveInRange(from, to);
     }
 }

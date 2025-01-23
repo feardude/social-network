@@ -27,7 +27,7 @@ public class PostController {
     public FeedResponse getFeed(@RequestParam(value = "userId") Integer userId, // для простоты тестирования без аутентификации
                                 @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
                                 @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
-        log.info("Requested post feed: offset={}, limit={}", offset, limit);
+        log.debug("Requested post feed: user-id={}, offset={}, limit={}", userId, offset, limit);
         return new FeedResponse(
                 postService.getFeed(userId, offset, limit)
         );

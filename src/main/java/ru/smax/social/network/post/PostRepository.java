@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,7 +32,6 @@ class PostRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Transactional(readOnly = true)
     public Post findById(UUID id) {
         return jdbcTemplate.queryForObject(
                 """

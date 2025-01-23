@@ -12,6 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Service
 public class PostService {
+    private final FeedCacheService feedCacheService;
     private final PostRepository repository;
 
     @Transactional(readOnly = true)
@@ -21,6 +22,17 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public List<Post> getFeed(Integer userId, Integer offset, Integer limit) {
-        return repository.findFriendsPosts(userId, offset, limit);
+        var cached = feedCacheService.get(userId, offset, limit);
+        if (!cached.isEmpty()) {
+            return cached;
+        }
+
+        log.debug("No posts in cached, loading from DB [user-id={}, offset={}, limit={}]", userId, offset, limit);
+        var posts = repository.findFriendsPosts(userId);
+        log.debug("Found {} posts", posts.size());
+        if (!posts.isEmpty()) {
+            feedCacheService.put(userId, posts);
+        }
+        return posts;
     }
 }

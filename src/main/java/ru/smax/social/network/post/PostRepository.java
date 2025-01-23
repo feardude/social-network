@@ -20,6 +20,15 @@ class PostRepository {
                         where f.user_id = ?
                          and p.author_user_id = f.friend_id
                         order by p.created_at desc
+            """;
+
+    private static final String SQL_FIND_FRIENDS_POSTS_LIMITED = """
+                        select p.*
+                        from posts p
+                        join friends f on f.friend_id = p.author_user_id
+                        where f.user_id = ?
+                         and p.author_user_id = f.friend_id
+                        order by p.created_at desc
                         limit ? offset ?
             """;
 
@@ -46,9 +55,17 @@ class PostRepository {
 
     public List<Post> findFriendsPosts(Integer userId, Integer offset, Integer limit) {
         return jdbcTemplate.query(
-                SQL_FIND_FRIENDS_POSTS,
+                SQL_FIND_FRIENDS_POSTS_LIMITED,
                 this::rowToPost,
                 userId, limit, offset
+        );
+    }
+
+    public List<Post> findFriendsPosts(Integer userId) {
+        return jdbcTemplate.query(
+                SQL_FIND_FRIENDS_POSTS,
+                this::rowToPost,
+                userId
         );
     }
 

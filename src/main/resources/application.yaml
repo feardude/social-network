@@ -6,3 +6,4 @@ logging:
   level:
     root: info
     org.springframework.security: info
+#    ru.smax: debug

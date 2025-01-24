@@ -2,68 +2,97 @@ package ru.smax.social.network.post;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import ru.smax.social.network.friend.FriendService;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
-import static org.springframework.transaction.annotation.Propagation.REQUIRES_NEW;
+import static java.time.ZoneOffset.UTC;
+import static java.util.Comparator.comparing;
 
 @Slf4j
 @AllArgsConstructor
 @Service
 public class PostCacheService {
+    private final FriendService friendService;
     private RedisTemplate<String, UUID> feedRedisTemplate;
     private RedisTemplate<UUID, Post> postRedisTemplate;
 
     public List<Post> getFeed(Integer userId, Integer offset, Integer limit) {
-        List<UUID> postIds = feedRedisTemplate.opsForList().range(
-                keyFeed(userId),
-                offset,
-                offset + limit - 1
-        );
-        log.debug("Got postIds from cache [total={}, from={}, to={}]",
-                postIds == null ? 0 : postIds.size(),
-                offset,
-                offset + limit - 1
-        );
-        if (postIds.isEmpty()) {
+        String key = keyFeed(userId);
+        Set<UUID> postIds = feedRedisTemplate.opsForZSet()
+                                             .reverseRange(key, offset, offset + limit - 1);
+
+        if (postIds == null || postIds.isEmpty()) {
             return List.of();
         }
 
         List<Post> posts = postRedisTemplate.opsForValue().multiGet(postIds);
-        log.debug("Got posts from cache [total={}, from={}, to={}]",
-                posts.size(),
-                offset,
-                offset + limit - 1
-        );
-
-        return posts;
+        return posts == null
+                ? List.of()
+                : posts.stream()
+                       .filter(Objects::nonNull)
+                       .sorted(comparing(Post::createdAt).reversed())
+                       .toList();
     }
 
-    @Transactional(propagation = REQUIRES_NEW)
-    public void putFeed(Integer userId, List<Post> posts) {
-        Map<UUID, Post> idToPost = posts.stream()
-                                        .collect(toMap(
-                                                Post::id,
-                                                identity()
-                                        ));
+    /**
+     * newPost would be added to multiple caches:
+     * - post itself
+     * - all subscribers' feeds
+     */
+    @Async
+    public void addPostToFeeds(Post newPost, List<Integer> subscriberIds) {
+        log.debug("Started updating feeds for post: hashcode={}, author={}", newPost.id().hashCode(), newPost.authorUserId());
 
-        feedRedisTemplate.opsForList().rightPushAll(
-                keyFeed(userId),
-                idToPost.keySet()
-        );
-        log.debug("Put post feed into redis: user-id={}, feed-size={}", userId, posts.size());
+        double score = newPost.createdAt().toEpochSecond(UTC);
+        for (Integer userId : subscriberIds) {
+            String key = keyFeed(userId);
+            feedRedisTemplate.opsForZSet().add(key, newPost.id(), score);
+            feedRedisTemplate.opsForZSet().removeRange(key, 0, -101);
+        }
+        log.debug("Updated {} cache feeds", subscriberIds.size());
 
-        postRedisTemplate.opsForValue().multiSetIfAbsent(idToPost);
-        log.debug("Put posts into redis (total {})", posts.size());
+        postRedisTemplate.opsForValue().set(newPost.id(), newPost);
+        log.debug("Finished updating feeds for post: hashcode={}, author={}", newPost.id().hashCode(), newPost.authorUserId());
+    }
 
-        // TODO сделать поддержку не более 100 постов в кэше
+    @Async
+    public void putFeed(Integer userId, List<Post> feed) {
+        String feedKey = keyFeed(userId);
+        Map<UUID, Post> postIdToPost = new HashMap<>();
+
+        Set<ZSetOperations.TypedTuple<UUID>> scoredPostIds = new HashSet<>();
+        for (Post post : feed) {
+            UUID postId = post.id();
+            postIdToPost.put(postId, post);
+
+            double score = post.createdAt().toEpochSecond(UTC);
+            scoredPostIds.add(new DefaultTypedTuple<>(postId, score));
+        }
+
+        feedRedisTemplate.opsForZSet().add(feedKey, scoredPostIds);
+        log.debug("Put feed into redis: user-id={}, feed-size={}", userId, feed.size());
+
+        postRedisTemplate.opsForValue().multiSetIfAbsent(postIdToPost);
+        log.debug("Put posts into redis (total {})", feed.size());
+    }
+
+    @Async
+    public void updateSubscribersFeeds(Post newPost) {
+        var subscriberIds = friendService.getSubscriberIds(newPost.authorUserId());
+        log.debug("Updating {} cache feeds for new post {}", subscriberIds.size(), newPost.id().hashCode());
+        addPostToFeeds(newPost, subscriberIds);
     }
 
     private String keyFeed(Integer userId) {
@@ -71,24 +100,5 @@ public class PostCacheService {
             throw new IllegalArgumentException("userId is null");
         }
         return "posts:feed:%d".formatted(userId);
-    }
-
-    public void putFeed(Map<Integer, List<UUID>> feed) {
-        feed.forEach((userId, postIds) -> {
-            String key = keyFeed(userId);
-            feedRedisTemplate.opsForList().trim(key, 0, -1);
-            feedRedisTemplate.opsForList().rightPushAll(key, postIds);
-        });
-        log.debug("Put post feed into redis: {} users}", feed.size());
-    }
-
-    public void putPosts(List<Post> posts) {
-        Map<UUID, Post> idToPost = posts.stream()
-                                        .collect(toMap(
-                                                Post::id,
-                                                identity()
-                                        ));
-        postRedisTemplate.opsForValue().multiSetIfAbsent(idToPost);
-        log.debug("Put posts into redis (total {})", posts.size());
     }
 }

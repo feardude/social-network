@@ -1,24 +1,19 @@
 package ru.smax.social.network.post;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Slf4j
 @AllArgsConstructor
 @Repository
 class PostRepository {
@@ -29,16 +24,7 @@ class PostRepository {
                         where f.user_id = ?
                          and p.author_user_id = f.friend_id
                         order by p.created_at desc
-            """;
-
-    private static final String SQL_FIND_FRIENDS_POSTS_LIMITED = """
-                        select p.*
-                        from posts p
-                        join friends f on f.friend_id = p.author_user_id
-                        where f.user_id = ?
-                         and p.author_user_id = f.friend_id
-                        order by p.created_at desc
-                        limit ? offset ?
+                        limit ?
             """;
 
     private static final RowMapper<Post> ROW_MAPPER_POST =
@@ -46,6 +32,7 @@ class PostRepository {
                            .id(UUID.fromString(rs.getString("id")))
                            .text(rs.getString("text"))
                            .authorUserId(rs.getInt("author_user_id"))
+                           .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
                            .build();
 
     private final JdbcTemplate jdbcTemplate;
@@ -63,63 +50,52 @@ class PostRepository {
         );
     }
 
-    public List<Post> findFriendsPosts(Integer userId, Integer offset, Integer limit) {
-        return jdbcTemplate.query(
-                SQL_FIND_FRIENDS_POSTS_LIMITED,
-                this::rowToPost,
-                userId, limit, offset
-        );
-    }
-
-    public List<Post> findFriendsPosts(Integer userId) {
+    public List<Post> findFriendsPosts(Integer userId, Integer limit) {
         return jdbcTemplate.query(
                 SQL_FIND_FRIENDS_POSTS,
-                this::rowToPost,
-                userId
+                ROW_MAPPER_POST,
+                userId, limit
         );
     }
 
-    private Post rowToPost(ResultSet rs, int rowNum) throws SQLException {
-        return new Post(
-                UUID.fromString(rs.getString("id")),
-                rs.getString("text"),
-                rs.getInt("author_user_id")
-        );
-    }
-
-    public Map<Integer, List<UUID>> findFriendPostIds(List<Integer> userIds) {
-        var sql = """
+    public Map<Integer, List<Post>> findFriendPostIds(List<Integer> userIds) {
+        var sql = """ 
                 select f.user_id as user_id,
-                       p.id      as post_id
+                       p.id,
+                       p.author_user_id,
+                       p.text,
+                       p.created_at
                 from posts p
                 join friends f on f.friend_id = p.author_user_id
                 where f.user_id in (:userIds)
                   and p.author_user_id = f.friend_id
                 """;
 
+        Map<Integer, List<Post>> userIdToPostIds = HashMap.newHashMap(userIds.size());
         var rows = namedParameterJdbcTemplate.queryForList(sql, new MapSqlParameterSource("userIds", userIds));
-        log.info("Found {} rows", rows.size());
-
-        Map<Integer, List<UUID>> userIdToPostIds = HashMap.newHashMap(userIds.size());
         for (var row : rows) {
             var userId = (Integer) row.get("user_id");
-            var postId = (UUID) row.get("post_id");
-            userIdToPostIds.computeIfAbsent(
-                                   userId,
-                                   _ -> new ArrayList<>())
-                           .add(postId);
+            var post = Post.builder()
+                           .id((UUID) row.get("id"))
+                           .text((String) row.get("text"))
+                           .authorUserId((int) row.get("author_user_id"))
+                           .createdAt(((Timestamp) row.get("created_at")).toLocalDateTime())
+                           .build();
+            userIdToPostIds.computeIfAbsent(userId, _ -> new ArrayList<>())
+                           .add(post);
         }
 
         return userIdToPostIds;
     }
 
-    public List<Post> findById(List<UUID> postIds) {
-        var sql = """
-                select id, text, author_user_id
-                        from posts
-                        where id in (:ids)
-                """;
-
-        return namedParameterJdbcTemplate.query(sql, Map.of("ids", postIds), ROW_MAPPER_POST);
+    public void savePost(Post newPost) {
+        var sql = "insert into posts (id, text, author_user_id, created_at) values (?, ?, ?, ?)";
+        jdbcTemplate.update(
+                sql,
+                newPost.id(),
+                newPost.text(),
+                newPost.authorUserId(),
+                newPost.createdAt()
+        );
     }
 }

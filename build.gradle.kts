@@ -44,6 +44,7 @@ dependencies {
 
     // cache
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
     // lombok
     compileOnly("org.projectlombok:lombok")

@@ -23,6 +23,12 @@ class UserRepository {
                 from users.users
                 where username = ?
             """;
+    private static final String SQL_FIND_ACTIVE_IN_RANGE = """
+            select id
+            from users.users
+            where last_active_at between ? and ?
+            """;
+
     private static final RowMapper<User> ROW_MAPPER_USER =
             (rs, _) -> User.builder()
                            .username(rs.getString("username"))
@@ -33,11 +39,6 @@ class UserRepository {
                            .city(rs.getString("city"))
                            .gender(rs.getString("gender"))
                            .build();
-    private static final String SQL_ACTIVE_IN_RANGE = """
-            select id
-            from users.users
-            where last_active_at between ? and ?
-            """;
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -112,7 +113,7 @@ class UserRepository {
 
     public List<Integer> findIdsActiveInRange(LocalDate from, LocalDate to) {
         return jdbcTemplate.queryForList(
-                SQL_ACTIVE_IN_RANGE,
+                SQL_FIND_ACTIVE_IN_RANGE,
                 Integer.class,
                 from, to
         );

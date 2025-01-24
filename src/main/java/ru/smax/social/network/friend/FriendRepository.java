@@ -16,17 +16,17 @@ class FriendRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public void createFriendship(Long userId, Long friendId) {
-        String sql = "INSERT INTO friends (user_id, friend_id, created_at) VALUES (?, ?, ?)";
+        String sql = "insert into friends (user_id, friend_id, created_at) values (?, ?, ?)";
         jdbcTemplate.update(sql, userId, friendId, LocalDateTime.now());
     }
 
     public List<Friend> findByUserId(Long userId) {
-        String sql = "SELECT * FROM friends WHERE user_id = ?";
+        String sql = "select * from friends where user_id = ?";
         return jdbcTemplate.query(sql, this::mapRowToFriend, userId);
     }
 
     public void deleteFriendship(Long userId, Long friendId) {
-        String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
+        String sql = "delete from friends where user_id = ? and friend_id = ?";
         jdbcTemplate.update(sql, userId, friendId);
     }
 
@@ -36,5 +36,10 @@ class FriendRepository {
                 rs.getLong("friend_id"),
                 rs.getTimestamp("created_at").toLocalDateTime()
         );
+    }
+
+    public List<Integer> findFollowersIds(Integer userId) {
+        String sql = "select user_id from friends where friend_id = ?";
+        return jdbcTemplate.queryForList(sql, Integer.class, userId);
     }
 }

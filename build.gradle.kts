@@ -3,6 +3,7 @@ plugins {
     idea
     id("org.springframework.boot") version "3.3.3"
     id("io.spring.dependency-management") version "1.1.6"
+    id("org.openapi.generator") version "5.3.0"
 }
 
 group = "ru.smax"
@@ -41,6 +42,10 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
 
+    // cache
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+
     // lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
@@ -62,3 +67,10 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+openApiGenerate {
+    inputSpec.set("$projectDir/src/main/resources/openapi.json") // Путь к вашей спецификации
+    generatorName.set("spring") // Указываем тип генератора
+    outputDir.set("$buildDir/generated") // Директория для сгенерированного кода
+}
+

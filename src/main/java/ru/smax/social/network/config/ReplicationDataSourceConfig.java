@@ -16,9 +16,9 @@ import java.util.Map;
 @Configuration
 public class ReplicationDataSourceConfig {
 
-//    @Primary
-//    @Bean
-//    @DependsOn({"writeDataSource", "read1DataSource", "routingDataSource"})
+    @Primary
+    @Bean
+    @DependsOn({"writeDataSource", "read1DataSource", "routingDataSource"})
     public DataSource dataSource() {
         return new LazyConnectionDataSourceProxy(routingDataSource());
     }
@@ -31,8 +31,8 @@ public class ReplicationDataSourceConfig {
 
         Map<Object, Object> dataSourceMap = new HashMap<>();
         dataSourceMap.put("write", writeDataSource());
-//        dataSourceMap.put("read1", read1DataSource());
-//        dataSourceMap.put("read2", read2DataSource());
+        dataSourceMap.put("read1", read1DataSource());
+        dataSourceMap.put("read2", read2DataSource());
         routingDataSource.setTargetDataSources(dataSourceMap);
         routingDataSource.setDefaultTargetDataSource(writeDataSource());
 
@@ -40,17 +40,16 @@ public class ReplicationDataSourceConfig {
     }
 
     @Bean
-    @Primary
     public DataSource writeDataSource() {
         return createHikariDataSource(5432);
     }
 
-//    @Bean
+    @Bean
     public DataSource read1DataSource() {
         return createHikariDataSource(25432);
     }
 
-//    @Bean
+    @Bean
     public DataSource read2DataSource() {
         return createHikariDataSource(35432);
     }

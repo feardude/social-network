@@ -19,7 +19,8 @@ public class SecurityConfig {
 
     private final String[] unsecuredUrls = new String[]{
             "/login",
-            "/user/register"
+            "/user/register",
+            "/**"
     };
 
     @Bean

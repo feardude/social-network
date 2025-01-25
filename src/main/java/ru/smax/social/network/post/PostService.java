@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.smax.social.network.friend.FriendService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +18,6 @@ import static java.util.UUID.randomUUID;
 public class PostService {
     private static final int POST_CACHE_LIMIT = 100;
 
-    private final FriendService friendService;
     private final PostCacheService postCacheService;
     private final PostRepository repository;
 
@@ -50,7 +48,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public Map<Integer, List<Post>> findFriendsPostIds(List<Integer> userIds) {
         log.info("Looking up feed for {} user ids", userIds.size());
-        return repository.findFriendPostIds(userIds);
+        return repository.findFriendPosts(userIds);
     }
 
     public void createPost(PostController.CreatePostRequest request) {

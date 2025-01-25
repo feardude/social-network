@@ -41,7 +41,7 @@ class PostRepository {
     public Post findById(UUID id) {
         return jdbcTemplate.queryForObject(
                 """
-                        select id, text, author_user_id
+                        select id, text, author_user_id, created_at
                         from posts
                         where id = ?
                         """,
@@ -58,17 +58,22 @@ class PostRepository {
         );
     }
 
-    public Map<Integer, List<Post>> findFriendPostIds(List<Integer> userIds) {
+    public Map<Integer, List<Post>> findFriendPosts(List<Integer> userIds) {
         var sql = """ 
-                select f.user_id as user_id,
-                       p.id,
-                       p.author_user_id,
-                       p.text,
-                       p.created_at
-                from posts p
-                join friends f on f.friend_id = p.author_user_id
-                where f.user_id in (:userIds)
-                  and p.author_user_id = f.friend_id
+                select user_id, id, author_user_id, text, created_at
+                from (
+                    select f.user_id as user_id,
+                        p.id,
+                        p.author_user_id,
+                        p.text,
+                        p.created_at,
+                        row_number() over (partition by f.user_id order by p.created_at desc) as rn
+                    from posts p
+                          join friends f on f.friend_id = p.author_user_id
+                    where f.user_id in (:userIds)
+                    and p.author_user_id = f.friend_id
+                ) subquery
+                where rn <= 100
                 """;
 
         Map<Integer, List<Post>> userIdToPostIds = HashMap.newHashMap(userIds.size());

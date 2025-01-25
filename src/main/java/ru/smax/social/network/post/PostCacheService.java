@@ -90,6 +90,7 @@ public class PostCacheService {
 
     @Async
     public void updateSubscribersFeeds(Post newPost) {
+        log.debug("Looking up subscribers: author={}", newPost.authorUserId());
         var subscriberIds = friendService.getSubscriberIds(newPost.authorUserId());
         log.debug("Updating {} cache feeds for new post {}", subscriberIds.size(), newPost.id().hashCode());
         addPostToFeeds(newPost, subscriberIds);

@@ -1,7 +1,7 @@
 plugins {
     java
     idea
-    id("org.springframework.boot") version "3.3.3"
+    id("org.springframework.boot") version "3.4.2"
     id("io.spring.dependency-management") version "1.1.6"
     id("org.openapi.generator") version "5.3.0"
 }
@@ -41,6 +41,10 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
+
+    // amqp + websocket
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
 
     // cache
     implementation("org.springframework.boot:spring-boot-starter-data-redis")

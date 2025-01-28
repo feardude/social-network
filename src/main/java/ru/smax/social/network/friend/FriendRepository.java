@@ -42,4 +42,9 @@ class FriendRepository {
         String sql = "select user_id from friends where friend_id = ?";
         return jdbcTemplate.queryForList(sql, Integer.class, userId);
     }
+
+    public List<Integer> findAuthors(Integer followerId) {
+        String sql = "select friend_id from friends where user_id = ? limit 100";
+        return jdbcTemplate.queryForList(sql, Integer.class, followerId);
+    }
 }

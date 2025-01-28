@@ -6,8 +6,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 
-import static java.util.concurrent.Executors.newFixedThreadPool;
-
 @Slf4j
 @AllArgsConstructor
 @Service

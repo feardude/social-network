@@ -1,13 +1,16 @@
 package ru.smax.social.network.post;
 
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.redis.core.DefaultTypedTuple;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.smax.social.network.friend.FriendService;
+import ru.smax.social.network.post.ws.RabbitMQConfig;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,13 +28,15 @@ import static java.util.Comparator.comparing;
 @Service
 public class PostCacheService {
     private final FriendService friendService;
-    private RedisTemplate<String, UUID> feedRedisTemplate;
-    private RedisTemplate<UUID, Post> postRedisTemplate;
+    private final RedisTemplate<String, UUID> feedRedisTemplate;
+    private final RedisTemplate<UUID, Post> postRedisTemplate;
+
+    private final RabbitTemplate rabbitTemplate;
 
     public List<Post> getFeed(Integer userId, Integer offset, Integer limit) {
         String key = keyFeed(userId);
         Set<UUID> postIds = feedRedisTemplate.opsForZSet()
-                                             .reverseRange(key, offset, offset + limit - 1);
+                                             .reverseRange(key, offset, offset + limit - 1L);
 
         if (postIds == null || postIds.isEmpty()) {
             return List.of();
@@ -88,12 +93,25 @@ public class PostCacheService {
         log.debug("Put posts into redis (total {})", feed.size());
     }
 
+    @SneakyThrows
     @Async
     public void updateSubscribersFeeds(Post newPost) {
         log.debug("Looking up subscribers: author={}", newPost.authorUserId());
         var subscriberIds = friendService.getSubscriberIds(newPost.authorUserId());
+        if (subscriberIds.size() > 10_000) {
+            log.debug("Author {} has too many subscribers ({}), skipping feed cache rebuild and notifying active subscribers",
+                    newPost.authorUserId(), subscriberIds.size());
+            return;
+        }
+
         log.debug("Updating {} cache feeds for new post {}", subscriberIds.size(), newPost.id().hashCode());
         addPostToFeeds(newPost, subscriberIds);
+
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EXCHANGE_POSTS,
+                RabbitMQConfig.toPostAuthorRoutingKey(newPost.authorUserId()),
+                newPost
+        );
     }
 
     private String keyFeed(Integer userId) {

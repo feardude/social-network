@@ -2,10 +2,8 @@ package ru.smax.social.network.post;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.smax.social.network.post.ws.RabbitMQConfig;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,9 +18,9 @@ import static java.util.UUID.randomUUID;
 public class PostService {
     private static final int POST_CACHE_LIMIT = 100;
 
+    private final MQService mqService;
     private final PostCacheService postCacheService;
     private final PostRepository repository;
-    private final RabbitTemplate rabbitTemplate;
 
     @Transactional(readOnly = true)
     public Post findPost(UUID postId) {
@@ -63,11 +61,6 @@ public class PostService {
                           .build();
         repository.savePost(newPost);
         log.debug("Saved new post {}", newPost);
-
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.EXCHANGE_POSTS,
-                RabbitMQConfig.toPostAuthorRoutingKey(newPost.authorUserId()),
-                newPost
-        );
+        mqService.sendNewPost(newPost);
     }
 }

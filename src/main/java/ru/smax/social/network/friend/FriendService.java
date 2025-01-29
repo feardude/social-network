@@ -27,7 +27,12 @@ public class FriendService {
     }
 
     @Transactional(readOnly = true)
-    public List<Integer> getSubscriberIds(Integer userId) {
-        return friendRepository.findFollowersIds(userId);
+    public List<Integer> getSubscriberIds(Integer authorId) {
+        return friendRepository.findFollowersIds(authorId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Integer> getAuthors(Integer followerId) {
+        return friendRepository.findAuthors(followerId);
     }
 }

@@ -43,3 +43,7 @@ out/
 
 postgres/
 *.log
+
+node_modules/
+package-lock.json
+package.json

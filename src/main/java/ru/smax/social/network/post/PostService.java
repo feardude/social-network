@@ -18,6 +18,7 @@ import static java.util.UUID.randomUUID;
 public class PostService {
     private static final int POST_CACHE_LIMIT = 100;
 
+    private final MQService mqService;
     private final PostCacheService postCacheService;
     private final PostRepository repository;
 
@@ -59,7 +60,7 @@ public class PostService {
                           .createdAt(LocalDateTime.now())
                           .build();
         repository.savePost(newPost);
-        postCacheService.updateSubscribersFeeds(newPost);
         log.debug("Saved new post {}", newPost);
+        mqService.sendNewPost(newPost);
     }
 }

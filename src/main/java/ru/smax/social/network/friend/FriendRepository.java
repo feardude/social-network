@@ -39,7 +39,7 @@ class FriendRepository {
     }
 
     public List<Integer> findFollowersIds(Integer userId) {
-        String sql = "select user_id from friends where friend_id = ?";
+        String sql = "select user_id from friends where friend_id = ? limit 10000";
         return jdbcTemplate.queryForList(sql, Integer.class, userId);
     }
 

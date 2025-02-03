@@ -6,4 +6,9 @@ logging:
   level:
     root: info
     org.springframework.security: info
-    ru.smax: info
+#    ru.smax: debug
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0

@@ -1,12 +1,17 @@
 spring:
   application:
     name: social-network
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
 
 logging:
   level:
     root: info
     org.springframework.security: info
-#    ru.smax: debug
+    ru.smax: ${LOGGING_LEVEL_RU_SMAX:info}
 
 management:
   tracing:
